@@ -41,3 +41,28 @@ Open your electronic 2D drawing in Autodesk Fusion 360, then click on the "Manuf
 - Select "CSV" in "Output Type" ;
 - Click on "Process Job" to export the ZIP file.
 ![PnP.png](readme/PnP.png)
+
+### Convert to manufacturer format
+
+- Go to [/q/swagger-ui](http://localhost:8080/q/swagger-ui) ;
+- ![Convert.png](readme/Convert.png)
+- Click on "POST /convert/{manufacturer}" ;
+- Click on "Try it out" ;
+- Select "JLCPCB" as manufacturer ;
+- Click on "Choose File" and select the ZIP file exported from Autodesk Fusion 360 ;
+- Click on "Execute" ;
+- Click on the link "Download file" under "Response Body" to download the converted file ;
+- Unzip the file.
+
+### Import in JLCPCB
+
+- Go to JLCPCB website and sign in ;
+- Click on "Order Now" or "Get Instant Quote" ;
+- Drag and drop the "Gerber.zip" file ;
+- ![JLCPCB_add_Gerber.png](readme/JLCPCB_add_Gerber.png)
+- Choose the options matching your design and switch "PCB Assembly" on ;
+- ![JLCPCB_add_assembly.png](readme/JLCPCB_add_assembly.png)
+- Click on "NEXT" twice ;
+- Drag and drop the "BOM.xlsx" and "CPL.xlsx" files then click on "Process BOM & CPL" ;
+- ![JLCPCB_add_BOM.png](readme/JLCPCB_add_BOM.png)
+- Then do what you want...
