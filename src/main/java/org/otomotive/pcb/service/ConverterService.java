@@ -3,31 +3,30 @@ package org.otomotive.pcb.service;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.RequestScoped;
 import org.apache.commons.lang3.tuple.Pair;
-import org.otomotive.pcb.dto.BomComponent;
-import org.otomotive.pcb.dto.Manufacturer;
-import org.otomotive.pcb.dto.PnpComponent;
-import org.otomotive.pcb.dto.PnpType;
+import org.otomotive.pcb.dto.*;
+import org.otomotive.pcb.manufacturer.IConverter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.attribute.FileTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static org.otomotive.pcb.Constants.COMMA;
 import static org.otomotive.pcb.Constants.NEWLINE_PATTERN;
+import static org.otomotive.pcb.dto.OutputType.BOM;
+import static org.otomotive.pcb.dto.OutputType.PNP;
 
 /**
  * Convert service.
  */
 @RequestScoped
 public class ConverterService {
+
+    private IConverter converter;
 
     /**
      * Convert Autodesk Fusion 360 PCB FAO archive to target manufacturer archive.
@@ -43,6 +42,10 @@ public class ConverterService {
         final ByteArrayOutputStream mainZip = new ByteArrayOutputStream();
         final ByteArrayOutputStream gerberZip = new ByteArrayOutputStream();
         final ZipOutputStream gerberOut = new ZipOutputStream(gerberZip);
+        final List<OutputFile<?>> files = new ArrayList<>();
+        final Map<String, BomComponent> bomComponents = new HashMap<>();
+
+        converter = manufacturer.getConverter();
 
         try (final ZipOutputStream out = new ZipOutputStream(mainZip)) {
 
@@ -55,7 +58,7 @@ public class ConverterService {
                     Log.infof("convert=%s input=%s", manufacturer, name);
 
                     // Gerber file
-                    if (name.contains("/GerberFiles/")) {
+                    if (name.contains("/GerberFiles/") || name.contains("/DrillFiles/")) {
 
                         final String fileName = name.substring(name.lastIndexOf("/") + 1);
 
@@ -72,9 +75,14 @@ public class ConverterService {
                             final List<PnpComponent> components = Arrays.stream(input.split(NEWLINE_PATTERN))
                                                                         .map(PnpComponent::fromLine)
                                                                         .toList();
-                            final Pair<String, byte[]> file = manufacturer.getConverter().convertPnp(name, type, components);
+                            final OutputFile<PnpComponent> file = OutputFile.<PnpComponent>builder()
+                                    .type(PNP)
+                                    .inputName(name)
+                                    .components(components)
+                                    .pnpType(type)
+                                    .build();
 
-                            addFile(out, file.getKey(), file.getValue());
+                            files.add(file);
                         }
                         // Bill of materials file
                         else {
@@ -85,11 +93,35 @@ public class ConverterService {
                                                                         .map(line -> BomComponent.fromLine(headers, line))
                                                                         .filter(Objects::nonNull)
                                                                         .toList();
-                            final Pair<String, byte[]> file = manufacturer.getConverter().convertBom(name, components);
+                            final OutputFile<BomComponent> file = OutputFile.<BomComponent>builder()
+                                    .type(BOM)
+                                    .inputName(name)
+                                    .components(components)
+                                    .build();
 
-                            addFile(out, file.getKey(), file.getValue());
+                            files.add(file);
+                            components.forEach(c -> c.getParts().forEach(p -> bomComponents.put(p, c)));
                         }
                     }
+                }
+
+                final List<Pair<String, byte[]>> bomFiles = files.stream()
+                        .map(this::toBom)
+                        .filter(Objects::nonNull)
+                        .toList();
+                final List<Pair<String, byte[]>> pnpFiles = files.stream()
+                        .map(f -> toPnp(f, bomComponents))
+                        .filter(Objects::nonNull)
+                        .toList();
+
+                for (final Pair<String, byte[]> pair : bomFiles) {
+
+                    addFile(out, pair.getKey(), pair.getValue());
+                }
+
+                for (final Pair<String, byte[]> pair : pnpFiles) {
+
+                    addFile(out, pair.getKey(), pair.getValue());
                 }
             }
             finally {
@@ -100,6 +132,28 @@ public class ConverterService {
         }
 
         return mainZip.toByteArray();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Pair<String, byte[]> toBom(final OutputFile<?> file) {
+
+        if (!BOM.equals(file.getType())) {
+
+            return null;
+        }
+
+        return converter.convertBom((OutputFile<BomComponent>) file);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Pair<String, byte[]> toPnp(final OutputFile<?> file, final Map<String, BomComponent> bomComponents) {
+
+        if (!PNP.equals(file.getType())) {
+
+            return null;
+        }
+
+        return converter.convertPnp((OutputFile<PnpComponent>) file, bomComponents);
     }
 
     private void addFile(final ZipOutputStream out, final String name, final byte[] content) throws IOException {

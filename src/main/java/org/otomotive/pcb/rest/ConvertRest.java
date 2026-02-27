@@ -28,14 +28,14 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.otomotive.pcb.Constants.*;
 
 /**
- * Convert REST API.
+ * Convert from Autodesk Fusion 360 ZIP file with CSV for BOM and PnP.
  */
 @RestResponseException
 @RequestScoped
 //@RolesAllowed({ROLE_ADMIN, ROLE_PRO, ROLE_USER})
 //@SecurityRequirement(name = SECURITY_SCHEME_NAME)
-@Path("/customer")
-@Tag(name = "Customer", description = "Customer data.")
+@Path("/convert")
+@Tag(name = "Convert", description = "Convert from Autodesk Fusion 360 FAO ZIP file with CSV for BOM and PnP.")
 public class ConvertRest {
 
     @Inject
@@ -49,10 +49,10 @@ public class ConvertRest {
      */
     @PerformanceLog("manufacturer")
     @POST
-    @Path("/convert/{manufacturer}")
+    @Path("/{manufacturer}")
     @Consumes(APPLICATION_ZIP)
     @Produces(APPLICATION_ZIP)
-    @Operation(summary = "Convert Autodesk Fusion 360 PCB FAO archive to target manufacturer archive.")
+    @Operation(summary = "Convert from Autodesk Fusion 360 FAO ZIP file with CSV for BOM and PnP to target manufacturer ZIP.")
     @APIResponses(value = {
             @APIResponse(responseCode = SHS_OK, description = "ZIP file.", content = @Content(mediaType = APPLICATION_ZIP, schema = @Schema(implementation = byte[].class))),
             @APIResponse(responseCode = SHS_UNAUTHORIZED, description = "Bad token.", content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = Error.class))),

@@ -7,12 +7,14 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.otomotive.pcb.dto.BomComponent;
+import org.otomotive.pcb.dto.OutputFile;
 import org.otomotive.pcb.dto.PnpComponent;
 import org.otomotive.pcb.dto.PnpType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static org.otomotive.pcb.Constants.*;
 
@@ -25,9 +27,11 @@ public class JlcPcbConverter implements IConverter {
     private static final List<String> PNP_HEADER = List.of("Designator","Mid X","Mid Y","Layer","Rotation");
 
     @Override
-    public Pair<String, byte[]> convertBom(final String name, final List<BomComponent> components) throws IOException {
+    public Pair<String, byte[]> convertBom(final OutputFile<BomComponent> file) {
 
-        Log.infof("convertBom input=%s components=%d", name, components.size());
+        final List<BomComponent> components = file.getComponents();
+
+        Log.infof("convertBom input=%s components=%d", file.getInputName(), components.size());
 
         try (final Workbook workbook = new XSSFWorkbook()) {
 
@@ -40,13 +44,20 @@ public class JlcPcbConverter implements IConverter {
             }
 
             return stream("BOM.xlsx", workbook);
+        } catch (final IOException e) {
+
+            Log.errorf(e, "convertBom input=%s components=%d", file.getInputName(), components.size());
+            return null;
         }
     }
 
     @Override
-    public Pair<String, byte[]> convertPnp(final String name, final PnpType type, final List<PnpComponent> components) throws IOException {
+    public Pair<String, byte[]> convertPnp(final OutputFile<PnpComponent> file, final Map<String, BomComponent> bomComponents) {
 
-        Log.infof("convertPnp=%s input=%s components=%d", type, name, components.size());
+        final List<PnpComponent> components = file.getComponents();
+        final PnpType type = file.getPnpType();
+
+        Log.infof("convertPnp=%s input=%s components=%d", type, file.getInputName(), components.size());
 
         try (final Workbook workbook = new XSSFWorkbook()) {
 
@@ -55,10 +66,14 @@ public class JlcPcbConverter implements IConverter {
 
             for (final PnpComponent component : components) {
 
-                row = addPnp(sheet, component, type, row);
+                row = addPnp(sheet, component, type, row, bomComponents);
             }
 
             return stream("CPL.xlsx", workbook);
+        } catch (final IOException e) {
+
+            Log.errorf(e, "convertPnp input=%s components=%d", file.getInputName(), components.size());
+            return null;
         }
     }
 
@@ -93,16 +108,24 @@ public class JlcPcbConverter implements IConverter {
         int c = 0;
 
         row.createCell(c++).setCellValue(mpn == null || mpn.isBlank() ? component.getValue() : mpn);
-        row.createCell(c++).setCellValue(component.getParts());
+        row.createCell(c++).setCellValue(String.join(COMMA, component.getParts()));
         row.createCell(c++).setCellValue(packageSize == null || packageSize.isBlank() ? component.getPackageName() : packageSize);
         row.createCell(c).setCellValue(ref == null || ref.isBlank() ? EMPTY : ref);
 
         return rowNumber+1;
     }
 
-    private int addPnp(final Sheet sheet, final PnpComponent component, final PnpType type, final int rowNumber) {
-
+    private int addPnp(
+            final Sheet sheet,
+            final PnpComponent component,
+            final PnpType type,
+            final int rowNumber,
+            final Map<String, BomComponent> bomComponents
+    ) {
         final Row row = sheet.createRow(rowNumber);
+        final BomComponent bomComponent = bomComponents.get(component.getName());
+        final String angleCorrection = bomComponent.getProperties().get("CORRECTION_ANGLE");
+        double angle = component.getAngle();
         int c = 0;
 
         row.createCell(c++).setCellValue(component.getName());
@@ -114,7 +137,18 @@ public class JlcPcbConverter implements IConverter {
             case FRONT -> row.createCell(c++).setCellValue("Top"); // Top
         }
 
-        row.createCell(c).setCellValue(Double.valueOf(component.getAngle()).intValue());
+        if (angleCorrection != null && !angleCorrection.isBlank()) {
+
+            try {
+
+                angle += Double.parseDouble(angleCorrection);
+            } catch (final NumberFormatException e) {
+
+                Log.errorf(e, "addPnp=%s msg=Invalid angle correction %s", component.getName(), angleCorrection);
+            }
+        }
+
+        row.createCell(c).setCellValue(Double.valueOf(angle).intValue());
 
         return rowNumber+1;
     }

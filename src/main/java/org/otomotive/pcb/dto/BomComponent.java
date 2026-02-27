@@ -27,7 +27,7 @@ public class BomComponent {
     private String value;
     private String device;
     private String packageName;
-    private String parts;
+    private List<String> parts;
     private String description;
     private Map<String, String> properties;
 
@@ -46,13 +46,14 @@ public class BomComponent {
         }
 
         final Map<String, String> properties = CsvReader.readLine(line, headers);
+        final String[] aParts = properties.remove("Parts").split(", ");
 
         return BomComponent.builder()
                            .quantity(Integer.parseInt(properties.remove("Qty")))
                            .value(properties.remove("Value"))
                            .device(properties.remove("Device"))
                            .packageName(properties.remove("Package"))
-                           .parts(properties.remove("Parts"))
+                           .parts(Arrays.asList(aParts))
                            .description(properties.remove("Description"))
                            .properties(properties)
                            .build();
