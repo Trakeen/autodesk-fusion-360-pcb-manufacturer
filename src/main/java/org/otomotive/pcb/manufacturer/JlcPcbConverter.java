@@ -56,8 +56,9 @@ public class JlcPcbConverter implements IConverter {
 
         final List<PnpComponent> components = file.getComponents();
         final PnpType type = file.getPnpType();
+        final String name = String.format("CPL_%s.xlsx", file.getPnpType());
 
-        Log.infof("convertPnp=%s input=%s components=%d", type, file.getInputName(), components.size());
+        Log.infof("convertPnp=%s input=%s output=%s components=%d", type, file.getInputName(), name, components.size());
 
         try (final Workbook workbook = new XSSFWorkbook()) {
 
@@ -69,7 +70,7 @@ public class JlcPcbConverter implements IConverter {
                 row = addPnp(sheet, component, type, row, bomComponents);
             }
 
-            return stream("CPL.xlsx", workbook);
+            return stream(name, workbook);
         } catch (final IOException e) {
 
             Log.errorf(e, "convertPnp input=%s components=%d", file.getInputName(), components.size());
