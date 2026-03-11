@@ -9,7 +9,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.otomotive.pcb.dto.BomComponent;
 import org.otomotive.pcb.dto.OutputFile;
 import org.otomotive.pcb.dto.PnpComponent;
-import org.otomotive.pcb.dto.PnpType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
