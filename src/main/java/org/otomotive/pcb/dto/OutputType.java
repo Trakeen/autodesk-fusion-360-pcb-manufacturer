@@ -20,5 +20,5 @@ public enum OutputType {
     /**
      * Pick and place.
      */
-    PNP;
+    PNP
 }

@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -34,6 +33,7 @@ public class ConverterService {
      * @param manufacturer PCB manufacturer
      * @return PCB manufacturer archive
      */
+    @SuppressWarnings("unchecked")
     public byte[] convert(
             final Manufacturer manufacturer,
             final byte[] zip
@@ -73,14 +73,14 @@ public class ConverterService {
 
                             final PnpType type = PnpType.fromFileName(name);
                             final List<PnpComponent> components = Arrays.stream(input.split(NEWLINE_PATTERN))
-                                                                        .map(PnpComponent::fromLine)
+                                                                        .map(l -> PnpComponent.fromLine(l, type))
                                                                         .toList();
                             final OutputFile<PnpComponent> file = OutputFile.<PnpComponent>builder()
-                                    .type(PNP)
-                                    .inputName(name)
-                                    .components(components)
-                                    .pnpType(type)
-                                    .build();
+                                                                            .type(PNP)
+                                                                            .inputName(name)
+                                                                            .components(components)
+                                                                            .componentType(PnpComponent.class)
+                                                                            .build();
 
                             files.add(file);
                         }
@@ -94,10 +94,11 @@ public class ConverterService {
                                                                         .filter(Objects::nonNull)
                                                                         .toList();
                             final OutputFile<BomComponent> file = OutputFile.<BomComponent>builder()
-                                    .type(BOM)
-                                    .inputName(name)
-                                    .components(components)
-                                    .build();
+                                                                            .type(BOM)
+                                                                            .inputName(name)
+                                                                            .components(components)
+                                                                            .componentType(BomComponent.class)
+                                                                            .build();
 
                             files.add(file);
                             components.forEach(c -> c.getParts().forEach(p -> bomComponents.put(p, c)));
@@ -105,23 +106,25 @@ public class ConverterService {
                     }
                 }
 
-                final List<Pair<String, byte[]>> bomFiles = files.stream()
-                        .map(this::toBom)
-                        .filter(Objects::nonNull)
-                        .toList();
-                final List<Pair<String, byte[]>> pnpFiles = files.stream()
-                        .map(f -> toPnp(f, bomComponents))
-                        .filter(Objects::nonNull)
-                        .toList();
+                final Optional<Pair<String, byte[]>> bomFile = files.stream()
+                                                                    .filter(f -> BomComponent.class.equals(f.getComponentType()))
+                                                                    .map(f -> (OutputFile<BomComponent>) f)
+                                                                    .reduce(OutputFile::merge)
+                                                                    .map(this::toBom);
+                final Optional<Pair<String, byte[]>> pnpFile = files.stream()
+                                                                    .filter(f -> PnpComponent.class.equals(f.getComponentType()))
+                                                                    .map(f -> (OutputFile<PnpComponent>) f)
+                                                                    .reduce(OutputFile::merge)
+                                                                    .map(f -> toPnp(f, bomComponents));
 
-                for (final Pair<String, byte[]> pair : bomFiles) {
+                if (bomFile.isPresent()) {
 
-                    addFile(out, pair.getKey(), pair.getValue());
+                    addFile(out, bomFile.get().getKey(), bomFile.get().getValue());
                 }
 
-                for (final Pair<String, byte[]> pair : pnpFiles) {
+                if (pnpFile.isPresent()) {
 
-                    addFile(out, pair.getKey(), pair.getValue());
+                    addFile(out, pnpFile.get().getKey(), pnpFile.get().getValue());
                 }
             }
             finally {

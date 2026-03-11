@@ -1,6 +1,9 @@
 package org.otomotive.pcb.utils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.otomotive.pcb.Constants.DOUBLE_QUOTE;
 
@@ -19,7 +22,7 @@ public class CsvReader {
         final Map<String, String> properties = new HashMap<>();
 
         Arrays.stream(readLine(line, headers.size()))
-                .forEach(column -> properties.put(headers.get(properties.size()), column));
+              .forEach(column -> properties.put(headers.get(properties.size()), column));
 
         return properties;
     }

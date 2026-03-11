@@ -11,8 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.otomotive.pcb.Constants.*;
-
 /**
  * Pick and place component.
  */
@@ -35,7 +33,7 @@ public class BomComponent {
      * Create a {@link BomComponent} from a line of a pick and place file.
      *
      * @param headers Headers of a pick and place file
-     * @param line Line of a pick and place file
+     * @param line    Line of a pick and place file
      * @return A {@link BomComponent} instance
      */
     public static BomComponent fromLine(final List<String> headers, final String line) {

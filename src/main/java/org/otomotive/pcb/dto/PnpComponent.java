@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.otomotive.pcb.utils.CsvReader;
 
-import static org.otomotive.pcb.Constants.*;
-
 /**
  * Pick and place component.
  */
@@ -20,6 +18,7 @@ import static org.otomotive.pcb.Constants.*;
 public class PnpComponent {
 
     private String name;
+    private PnpType pnpType;
     private double x;
     private double y;
     private double angle;
@@ -29,15 +28,17 @@ public class PnpComponent {
     /**
      * Create a {@link PnpComponent} from a line of a pick and place file.
      *
-     * @param line Line of a pick and place file
+     * @param line    Line of a pick and place file
+     * @param pnpType Pick and place type
      * @return A {@link PnpComponent} instance
      */
-    public static PnpComponent fromLine(final String line) {
+    public static PnpComponent fromLine(final String line, final PnpType pnpType) {
 
         final String[] fields = CsvReader.readLine(line, 6);
 
         return PnpComponent.builder()
                            .name(fields[0])
+                           .pnpType(pnpType)
                            .x(Double.parseDouble(fields[1]))
                            .y(Double.parseDouble(fields[2]))
                            .angle(Double.parseDouble(fields[3]))

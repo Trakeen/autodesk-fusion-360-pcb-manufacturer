@@ -22,7 +22,6 @@ import org.otomotive.pcb.interceptor.RestResponseException;
 import org.otomotive.pcb.service.ConverterService;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.otomotive.pcb.Constants.*;

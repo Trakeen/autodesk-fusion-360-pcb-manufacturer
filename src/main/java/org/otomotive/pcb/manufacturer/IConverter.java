@@ -15,7 +15,7 @@ public interface IConverter {
     /**
      * Convert a bill of materials to a target manufacturer file.
      *
-     * @param file       Bill of materials file
+     * @param file Bill of materials file
      * @return Target manufacturer file
      */
     Pair<String, byte[]> convertBom(OutputFile<BomComponent> file);
@@ -23,7 +23,7 @@ public interface IConverter {
     /**
      * Convert a pick and place file to a target manufacturer file.
      *
-     * @param file       Pick and place file
+     * @param file          Pick and place file
      * @param bomComponents Bill of materials components for reference
      * @return Target manufacturer file
      */

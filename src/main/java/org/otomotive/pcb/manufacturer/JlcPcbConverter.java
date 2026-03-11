@@ -23,8 +23,8 @@ import static org.otomotive.pcb.Constants.*;
  */
 public class JlcPcbConverter implements IConverter {
 
-    private static final List<String> BOM_HEADER = List.of("Comment" ,"Designator","Footprint", "JLCPCB Part #（optional）");
-    private static final List<String> PNP_HEADER = List.of("Designator","Mid X","Mid Y","Layer","Rotation");
+    private static final List<String> BOM_HEADER = List.of("Comment", "Designator", "Footprint", "JLCPCB Part #（optional）");
+    private static final List<String> PNP_HEADER = List.of("Designator", "Mid X", "Mid Y", "Layer", "Rotation");
 
     @Override
     public Pair<String, byte[]> convertBom(final OutputFile<BomComponent> file) {
@@ -40,11 +40,12 @@ public class JlcPcbConverter implements IConverter {
 
             for (final BomComponent component : components) {
 
-               row= addBom(sheet, component, row);
+                row = addBom(sheet, component, row);
             }
 
             return stream("BOM.xlsx", workbook);
-        } catch (final IOException e) {
+        }
+        catch (final IOException e) {
 
             Log.errorf(e, "convertBom input=%s components=%d", file.getInputName(), components.size());
             return null;
@@ -55,9 +56,8 @@ public class JlcPcbConverter implements IConverter {
     public Pair<String, byte[]> convertPnp(final OutputFile<PnpComponent> file, final Map<String, BomComponent> bomComponents) {
 
         final List<PnpComponent> components = file.getComponents();
-        final PnpType type = file.getPnpType();
 
-        Log.infof("convertPnp=%s input=%s components=%d", type, file.getInputName(), components.size());
+        Log.infof("convertPnp=%s components=%d", file.getInputName(), components.size());
 
         try (final Workbook workbook = new XSSFWorkbook()) {
 
@@ -66,11 +66,12 @@ public class JlcPcbConverter implements IConverter {
 
             for (final PnpComponent component : components) {
 
-                row = addPnp(sheet, component, type, row, bomComponents);
+                row = addPnp(sheet, component, row, bomComponents);
             }
 
             return stream("CPL.xlsx", workbook);
-        } catch (final IOException e) {
+        }
+        catch (final IOException e) {
 
             Log.errorf(e, "convertPnp input=%s components=%d", file.getInputName(), components.size());
             return null;
@@ -112,13 +113,12 @@ public class JlcPcbConverter implements IConverter {
         row.createCell(c++).setCellValue(packageSize == null || packageSize.isBlank() ? component.getPackageName() : packageSize);
         row.createCell(c).setCellValue(ref == null || ref.isBlank() ? EMPTY : ref);
 
-        return rowNumber+1;
+        return rowNumber + 1;
     }
 
     private int addPnp(
             final Sheet sheet,
             final PnpComponent component,
-            final PnpType type,
             final int rowNumber,
             final Map<String, BomComponent> bomComponents
     ) {
@@ -132,7 +132,7 @@ public class JlcPcbConverter implements IConverter {
         row.createCell(c++).setCellValue(String.format("%f%s", component.getX(), MILLIMETERS));
         row.createCell(c++).setCellValue(String.format("%f%s", component.getY(), MILLIMETERS));
 
-        switch (type) {
+        switch (component.getPnpType()) {
             case BACK -> row.createCell(c++).setCellValue("Bottom"); // Bottom
             case FRONT -> row.createCell(c++).setCellValue("Top"); // Top
         }
@@ -142,7 +142,8 @@ public class JlcPcbConverter implements IConverter {
             try {
 
                 angle += Double.parseDouble(angleCorrection);
-            } catch (final NumberFormatException e) {
+            }
+            catch (final NumberFormatException e) {
 
                 Log.errorf(e, "addPnp=%s msg=Invalid angle correction %s", component.getName(), angleCorrection);
             }
@@ -150,6 +151,6 @@ public class JlcPcbConverter implements IConverter {
 
         row.createCell(c).setCellValue(Double.valueOf(angle).intValue());
 
-        return rowNumber+1;
+        return rowNumber + 1;
     }
 }
