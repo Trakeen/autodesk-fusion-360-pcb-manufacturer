@@ -15,12 +15,12 @@ public enum PnpType {
     /**
      * Back pick and place.
      */
-    BACK("_back.csv"),
+    BACK("_back.txt"),
 
     /**
      * Front pick and place.
      */
-    FRONT("_front.csv");
+    FRONT("_front.txt");
 
     /**
      * File suffix.

@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.otomotive.pcb.utils.CsvReader;
+import org.otomotive.pcb.utils.FixedLengthTxtReader;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static org.otomotive.pcb.Constants.EMPTY;
 
 /**
  * Pick and place component.
@@ -24,7 +26,6 @@ public class BomComponent {
     private int quantity;
     private String value;
     private String device;
-    private String packageName;
     private List<String> parts;
     private String description;
     private Map<String, String> properties;
@@ -38,22 +39,77 @@ public class BomComponent {
      */
     public static BomComponent fromLine(final List<String> headers, final String line) {
 
-        if (line.startsWith(headers.get(0))) {
+        final Map<String, String> properties = FixedLengthTxtReader.readLine(line, headers);
+
+        if (properties == null) {
 
             return null;
         }
 
-        final Map<String, String> properties = CsvReader.readLine(line, headers);
         final String[] aParts = properties.remove("Parts").split(", ");
 
         return BomComponent.builder()
                            .quantity(Integer.parseInt(properties.remove("Qty")))
                            .value(properties.remove("Value"))
                            .device(properties.remove("Device"))
-                           .packageName(properties.remove("Package"))
                            .parts(Arrays.asList(aParts))
                            .description(properties.remove("Description"))
                            .properties(properties)
                            .build();
+    }
+
+    /**
+     * Get manufacturer.
+     *
+     * @return Manufacturer
+     */
+    public String getManufacturer() {
+
+        String manufacturer = properties.get("MANUFACTURER");
+
+        if (manufacturer != null && !manufacturer.isEmpty()) {
+
+            return manufacturer;
+        }
+
+        manufacturer = properties.get("MF");
+
+        if (manufacturer != null && !manufacturer.isEmpty()) {
+
+            return manufacturer;
+        }
+
+        manufacturer = properties.get("MANUFACTURER_NAME");
+
+        if (manufacturer != null && !manufacturer.isEmpty()) {
+
+            return manufacturer;
+        }
+
+        return EMPTY;
+    }
+
+    /**
+     * Get package name.
+     *
+     * @return Package name.
+     */
+    public String getPackageName() {
+
+        String packageName = properties.get("MP");
+
+        if (packageName != null && !packageName.isEmpty()) {
+
+            return packageName;
+        }
+
+        packageName = properties.get("Package");
+
+        if (packageName != null && !packageName.isEmpty()) {
+
+            return packageName;
+        }
+
+        return EMPTY;
     }
 }

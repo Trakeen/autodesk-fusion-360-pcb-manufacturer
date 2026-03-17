@@ -12,7 +12,7 @@ Tool used to convert from Autodesk Fusion 360 ZIP file with CSV for BOM and PnP.
 - Open toggle "Attributes" ;
 - If your manufacturer is JLCPCB, add an attribute "JLCPCB" with the JLCPCB reference as value (e.g. "C376123") ;
 - If the component is not shown with the good orientation in your manufacturer preview, add an attribute "
-  CORRECTION_ANGLE" with the value "-90" to rotate the component by 90° in counter-clockwise direction ;
+  <Manufacturer>_CORRECTION_ANGLE" with the value "-90" to rotate the component by 90° in counter-clockwise direction ;
   ![Add_ref.png](readme/Add_ref.png)
 
 ### Adding references to components in your library
@@ -24,7 +24,8 @@ Tool used to convert from Autodesk Fusion 360 ZIP file with CSV for BOM and PnP.
 - ![Component_attribute_set.png](readme/Component_attribute_set.png)
 - Click on "New Attribute" ;
 - ![Component_variant_attributes.png](readme/Component_variant_attributes.png)
-- Enter a "Name" and a "Value" for your attribute (e.g. "JLCPCB" with value "C647352"), then click on "OK" twice ;
+- Enter a "Name" and a "Value" for your attribute (e.g. "JLCPCB_PART_NUMBER" with value "C647352"), then click on "OK"
+  twice ;
 - ![Component_new_attribute.png](readme/Component_new_attribute.png)
 
 ### Export
@@ -35,14 +36,7 @@ processor".
 
 - Select a template matching your number of layers ;
 - Select "Export as ZIP" ;
-- Select "Assembly > Bill of Material" in "Output Files" ;
-- Select "CSV" in "Output Type" ;
-  ![BOM.png](readme/BOM.png)
-
-- Select "Assembly > Pick and Place" in "Output Files" ;
-- Select "CSV" in "Output Type" ;
 - Click on "Process Job" to export the ZIP file.
-  ![PnP.png](readme/PnP.png)
 
 ### Convert to manufacturer format
 

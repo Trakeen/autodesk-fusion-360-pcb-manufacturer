@@ -5,6 +5,7 @@ import jakarta.enterprise.context.RequestScoped;
 import org.apache.commons.lang3.tuple.Pair;
 import org.otomotive.pcb.dto.*;
 import org.otomotive.pcb.manufacturer.IConverter;
+import org.otomotive.pcb.utils.FixedLengthTxtReader;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,7 +15,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static org.otomotive.pcb.Constants.COMMA;
 import static org.otomotive.pcb.Constants.NEWLINE_PATTERN;
 import static org.otomotive.pcb.dto.OutputType.BOM;
 import static org.otomotive.pcb.dto.OutputType.PNP;
@@ -64,7 +64,7 @@ public class ConverterService {
 
                         addFile(gerberOut, fileName, in.readAllBytes());
                     }
-                    else if (name.endsWith(".csv")) {
+                    else if (name.endsWith(".txt")) {
 
                         final String input = new String(in.readAllBytes());
 
@@ -88,7 +88,7 @@ public class ConverterService {
                         else {
 
                             final String[] lines = input.split(NEWLINE_PATTERN);
-                            final List<String> headers = Arrays.asList(lines[0].split(COMMA));
+                            final List<String> headers = FixedLengthTxtReader.readHeaders(lines);
                             final List<BomComponent> components = Arrays.stream(lines)
                                                                         .map(line -> BomComponent.fromLine(headers, line))
                                                                         .filter(Objects::nonNull)

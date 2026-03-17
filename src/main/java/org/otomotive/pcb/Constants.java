@@ -6,14 +6,24 @@ package org.otomotive.pcb;
 public class Constants {
 
     /**
+     * Application name.
+     */
+    public static final String APP_NAME = "PCB converter";
+
+    /**
      * ZIP type.
      */
     public static final String APPLICATION_ZIP = "application/zip";
 
     /**
-     * Application name.
+     * Correction angle suffix.
      */
-    public static final String APP_NAME = "PCB converter";
+    public static final String SUFFIX_CORRECTION_ANGLE = "_CORRECTION_ANGLE";
+
+    /**
+     * Part number suffix.
+     */
+    public static final String SUFFIX_PART_NUMBER = "_PART_NUMBER";
 
     /**
      * Not applicable.
@@ -29,6 +39,16 @@ public class Constants {
      * Comma.
      */
     public static final String COMMA = ",";
+
+    /**
+     * Space.
+     */
+    public static final char SPACE = ' ';
+
+    /**
+     * Tab.
+     */
+    public static final String TAB = "\t";
 
     /**
      * Double quote.

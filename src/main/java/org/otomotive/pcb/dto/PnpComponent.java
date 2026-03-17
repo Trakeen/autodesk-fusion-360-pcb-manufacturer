@@ -1,11 +1,16 @@
 package org.otomotive.pcb.dto;
 
+import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.otomotive.pcb.utils.CsvReader;
+
+import java.util.Map;
+
+import static org.otomotive.pcb.Constants.SUFFIX_CORRECTION_ANGLE;
+import static org.otomotive.pcb.Constants.TAB;
 
 /**
  * Pick and place component.
@@ -34,7 +39,7 @@ public class PnpComponent {
      */
     public static PnpComponent fromLine(final String line, final PnpType pnpType) {
 
-        final String[] fields = CsvReader.readLine(line, 6);
+        final String[] fields = line.split(TAB);
 
         return PnpComponent.builder()
                            .name(fields[0])
@@ -45,5 +50,35 @@ public class PnpComponent {
                            .value(fields[4])
                            .packageName(fields[5])
                            .build();
+    }
+
+    /**
+     * Get correction angle.
+     *
+     * @param bomComponent BOM component
+     * @param manufacturer Manufacturer
+     * @return Angle in degrees
+     */
+    public double getCorrectionAngle(
+            final BomComponent bomComponent,
+            final Manufacturer manufacturer
+    ) {
+        final Map<String, String> properties = bomComponent.getProperties();
+        final String angleCorrection = properties.get(manufacturer.name().concat(SUFFIX_CORRECTION_ANGLE));
+        double correction = angle;
+
+        if (angleCorrection != null && !angleCorrection.isBlank()) {
+
+            try {
+
+                correction += Double.parseDouble(angleCorrection);
+            }
+            catch (final NumberFormatException e) {
+
+                Log.errorf(e, "addPnp=%s msg=Invalid angle correction %s", name, angleCorrection);
+            }
+        }
+
+        return correction;
     }
 }
