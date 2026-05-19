@@ -32,7 +32,7 @@
         <lombok.version>1.18.42</lombok.version>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.31.4</quarkus.platform.version>
+        <quarkus.platform.version>3.35.3</quarkus.platform.version>
         <hibernate.version>7.1.3.Final</hibernate.version>
     </properties>
 
