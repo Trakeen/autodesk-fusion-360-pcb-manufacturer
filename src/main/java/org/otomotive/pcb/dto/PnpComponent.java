@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
-import static org.otomotive.pcb.Constants.SUFFIX_CORRECTION_ANGLE;
-import static org.otomotive.pcb.Constants.TAB;
+import static org.otomotive.pcb.Constants.*;
 
 /**
  * Pick and place component.
@@ -53,29 +52,76 @@ public class PnpComponent {
     }
 
     /**
-     * Get correction angle.
+     * Get angle correction.
      *
      * @param bomComponent BOM component
      * @param manufacturer Manufacturer
-     * @return Angle in degrees
+     * @return Corrected angle
      */
     public double getCorrectionAngle(
             final BomComponent bomComponent,
             final Manufacturer manufacturer
     ) {
-        final Map<String, String> properties = bomComponent.getProperties();
-        final String angleCorrection = properties.get(manufacturer.name().concat(SUFFIX_CORRECTION_ANGLE));
-        double correction = angle;
+        return getCorrection(bomComponent, manufacturer, angle, SUFFIX_CORRECTION_ANGLE);
+    }
 
-        if (angleCorrection != null && !angleCorrection.isBlank()) {
+    /**
+     * Get X correction.
+     *
+     * @param bomComponent BOM component
+     * @param manufacturer Manufacturer
+     * @return Corrected X
+     */
+    public double getCorrectionX(
+            final BomComponent bomComponent,
+            final Manufacturer manufacturer
+    ) {
+        return getCorrection(bomComponent, manufacturer, x, SUFFIX_CORRECTION_X);
+    }
+
+    /**
+     * Get Y correction.
+     *
+     * @param bomComponent BOM component
+     * @param manufacturer Manufacturer
+     * @return Corrected Y
+     */
+    public double getCorrectionY(
+            final BomComponent bomComponent,
+            final Manufacturer manufacturer
+    ) {
+        return getCorrection(bomComponent, manufacturer, y, SUFFIX_CORRECTION_Y);
+    }
+
+    /**
+     * Get correction.
+     *
+     * @param bomComponent BOM component
+     * @param manufacturer Manufacturer
+     * @return Corrected number
+     */
+    public double getCorrection(
+            final BomComponent bomComponent,
+            final Manufacturer manufacturer,
+            final double initNumber,
+            final String suffix
+    ) {
+        final Map<String, String> properties = bomComponent.getProperties();
+        final String key = manufacturer.name().concat(suffix);
+        final String strCorrection = properties.get(key);
+        double correction = initNumber;
+
+        if (strCorrection != null && !strCorrection.isBlank()) {
 
             try {
 
-                correction += Double.parseDouble(angleCorrection);
+                correction += Double.parseDouble(strCorrection);
             }
             catch (final NumberFormatException e) {
 
-                Log.errorf(e, "addPnp=%s msg=Invalid angle correction %s", name, angleCorrection);
+                Log.errorf(e, "addPnp=%s msg=Invalid %s correction %s", name, key, strCorrection);
+
+                throw new IllegalArgumentException(String.format("Check %s attribute %s: %s", name, key, strCorrection));
             }
         }
 

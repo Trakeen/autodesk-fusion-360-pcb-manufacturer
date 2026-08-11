@@ -102,13 +102,17 @@ public class JlcPcbConverter implements IConverter {
 
     private int addBom(final Sheet sheet, final BomComponent component, final int rowNumber) {
 
+        if (component.isIgnored(JLCPCB)) {
+
+            return rowNumber;
+        }
+
         final Row row = sheet.createRow(rowNumber);
-        final String mpn = component.getProperties().get("MPN");
         final String packageSize = component.getProperties().get("PACKAGE_SIZE");
         final String ref = component.getProperties().get(JLCPCB.name().concat(SUFFIX_PART_NUMBER));
         int c = 0;
 
-        row.createCell(c++).setCellValue(mpn == null || mpn.isBlank() ? component.getValue() : mpn); // Comment
+        row.createCell(c++).setCellValue(component.getName()); // Comment
         row.createCell(c++).setCellValue(String.join(COMMA, component.getParts())); // Designator
         row.createCell(c++).setCellValue(packageSize == null || packageSize.isBlank() ? component.getPackageName() : packageSize); // Footprint
         row.createCell(c).setCellValue(ref == null || ref.isBlank() ? EMPTY : ref); // JLCPCB ref
@@ -122,14 +126,22 @@ public class JlcPcbConverter implements IConverter {
             final int rowNumber,
             final Map<String, BomComponent> bomComponents
     ) {
-        final Row row = sheet.createRow(rowNumber);
         final BomComponent bomComponent = bomComponents.get(component.getName());
+
+        if (bomComponent.isIgnored(JLCPCB)) {
+
+            return rowNumber;
+        }
+
+        final Row row = sheet.createRow(rowNumber);
         final double angle = component.getCorrectionAngle(bomComponent, JLCPCB);
+        final double x = component.getCorrectionX(bomComponent, JLCPCB);
+        final double y = component.getCorrectionY(bomComponent, JLCPCB);
         int c = 0;
 
         row.createCell(c++).setCellValue(component.getName());
-        row.createCell(c++).setCellValue(String.format("%f%s", component.getX(), MILLIMETERS));
-        row.createCell(c++).setCellValue(String.format("%f%s", component.getY(), MILLIMETERS));
+        row.createCell(c++).setCellValue(String.format("%f%s", x, MILLIMETERS));
+        row.createCell(c++).setCellValue(String.format("%f%s", y, MILLIMETERS));
 
         switch (component.getPnpType()) {
             case BACK -> row.createCell(c++).setCellValue("Bottom"); // Bottom

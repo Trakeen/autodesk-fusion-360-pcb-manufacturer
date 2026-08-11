@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.otomotive.pcb.Constants.*;
-import static org.otomotive.pcb.dto.Manufacturer.JLCPCB;
+import static org.otomotive.pcb.dto.Manufacturer.PCBWAY;
 
 /**
  * JLCPCB converter.
@@ -102,10 +102,14 @@ public class PcbWayConverter implements IConverter {
 
     private int addBom(final Sheet sheet, final BomComponent component, final int rowNumber) {
 
+        if (component.isIgnored(PCBWAY)) {
+
+            return rowNumber;
+        }
+
         final Row row = sheet.createRow(rowNumber);
         final Map<String, String> properties = component.getProperties();
         final String packageSize = properties.get("PACKAGE_SIZE");
-        final String value = properties.get("VALUE");
         final List<String> parts = component.getParts();
         int c = 0;
 
@@ -114,7 +118,7 @@ public class PcbWayConverter implements IConverter {
         row.createCell(c++).setCellValue(component.getQuantity()); // Qty
         row.createCell(c++).setCellValue(component.getManufacturer()); // Manufacturer
         row.createCell(c++).setCellValue(component.getPackageName()); // Mfg Part
-        row.createCell(c++).setCellValue(value == null || value.isBlank() ? component.getDescription() : value); // Description / Value
+        row.createCell(c++).setCellValue(component.getName()); // Description / Value
         row.createCell(c++).setCellValue(packageSize == null || packageSize.isBlank() ? component.getPackageName() : packageSize); // Package/Footprint
         row.createCell(c++).setCellValue(getType(component)); // Type
         row.createCell(c).setCellValue(EMPTY); // Your Instructions / Notes
@@ -164,21 +168,29 @@ public class PcbWayConverter implements IConverter {
             final int rowNumber,
             final Map<String, BomComponent> bomComponents
     ) {
-        final Row row = sheet.createRow(rowNumber);
         final BomComponent bomComponent = bomComponents.get(component.getName());
-        final double angle = component.getCorrectionAngle(bomComponent, JLCPCB);
-        final String x = String.format("%f%s", component.getX(), MILLIMETERS);
-        final String y = String.format("%f%s", component.getY(), MILLIMETERS);
+
+        if (bomComponent.isIgnored(PCBWAY)) {
+
+            return rowNumber;
+        }
+
+        final Row row = sheet.createRow(rowNumber);
+        final double angle = component.getCorrectionAngle(bomComponent, PCBWAY);
+        final double x = component.getCorrectionX(bomComponent, PCBWAY);
+        final double y = component.getCorrectionY(bomComponent, PCBWAY);
+        final String strX = String.format("%f%s", x, MILLIMETERS);
+        final String strY = String.format("%f%s", y, MILLIMETERS);
         int c = 0;
 
         row.createCell(c++).setCellValue(component.getName()); // Designator
         row.createCell(c++).setCellValue(bomComponent.getPackageName()); // Footprint
-        row.createCell(c++).setCellValue(x); // Mid X
-        row.createCell(c++).setCellValue(y); // Mid Y
-        row.createCell(c++).setCellValue(x); // Ref X
-        row.createCell(c++).setCellValue(y); // Ref Y
-        row.createCell(c++).setCellValue(x); // Pad X
-        row.createCell(c++).setCellValue(y); // Pad Y
+        row.createCell(c++).setCellValue(strX); // Mid X
+        row.createCell(c++).setCellValue(strY); // Mid Y
+        row.createCell(c++).setCellValue(strX); // Ref X
+        row.createCell(c++).setCellValue(strY); // Ref Y
+        row.createCell(c++).setCellValue(strX); // Pad X
+        row.createCell(c++).setCellValue(strY); // Pad Y
 
         // Layer
         switch (component.getPnpType()) {

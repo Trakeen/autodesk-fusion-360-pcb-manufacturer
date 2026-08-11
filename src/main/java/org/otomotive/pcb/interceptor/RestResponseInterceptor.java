@@ -1,11 +1,15 @@
 package org.otomotive.pcb.interceptor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.validator.runtime.jaxrs.ResteasyReactiveViolationException;
 import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import jakarta.validation.ConstraintViolation;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestResponse;
@@ -31,6 +35,9 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 public class RestResponseInterceptor extends AbstractPerformanceInterceptor {
 
     private static final String COMMA = ", ";
+
+    @Inject
+    ObjectMapper mapper;
 
     @Override
     protected Object invocationInternal(final InvocationContext invocationContext) throws Exception {
@@ -92,19 +99,20 @@ public class RestResponseInterceptor extends AbstractPerformanceInterceptor {
         }
     }
 
-    private RestResponse<Error> getRestResponse(
+    private RestResponse<String> getRestResponse(
             final InvocationContext invocationContext,
             final Response.Status status,
             final Error error,
             final Throwable e
-    ) {
+    ) throws JsonProcessingException {
         final Method method = invocationContext.getMethod();
         final Logger log = Logger.getLogger(method.getDeclaringClass());
 
         log.error(e.getMessage(), e);
 
         return RestResponse.ResponseBuilder
-                .create(status, error)
+                .create(status, mapper.writeValueAsString(error))
+                .type(MediaType.APPLICATION_JSON_TYPE)
                 .build();
     }
 }

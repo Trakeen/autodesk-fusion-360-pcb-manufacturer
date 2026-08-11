@@ -21,9 +21,29 @@ public class Constants {
     public static final String SUFFIX_CORRECTION_ANGLE = "_CORRECTION_ANGLE";
 
     /**
+     * Correction X suffix.
+     */
+    public static final String SUFFIX_CORRECTION_X = "_CORRECTION_X";
+
+    /**
+     * Correction Y suffix.
+     */
+    public static final String SUFFIX_CORRECTION_Y = "_CORRECTION_Y";
+
+    /**
      * Part number suffix.
      */
     public static final String SUFFIX_PART_NUMBER = "_PART_NUMBER";
+
+    /**
+     * Part ignore suffix.
+     */
+    public static final String SUFFIX_IGNORE = "_IGNORE";
+
+    /**
+     * Yes.
+     */
+    public static final String YES = "Y";
 
     /**
      * Not applicable.

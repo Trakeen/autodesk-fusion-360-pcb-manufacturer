@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.otomotive.pcb.Constants.EMPTY;
+import static org.otomotive.pcb.Constants.*;
 
 /**
  * Pick and place component.
@@ -56,6 +56,57 @@ public class BomComponent {
                            .description(properties.remove("Description"))
                            .properties(properties)
                            .build();
+    }
+
+    /**
+     * Get component name.
+     *
+     * @return Component name
+     */
+    public String getName() {
+
+        String name = properties.get("MP");
+
+        if (name != null && !name.isBlank()) {
+
+            return name;
+        }
+
+        name = properties.get("MPN");
+
+        if (name != null && !name.isBlank()) {
+
+            return name;
+        }
+
+        name = properties.get("MANUFACTURER_PART_NUMBER");
+
+        if (name != null && !name.isBlank()) {
+
+            return name;
+        }
+
+        name = getValue();
+
+        if (name != null && !name.isBlank()) {
+
+            return name;
+        }
+
+        return getDescription();
+    }
+
+    /**
+     * Component must be ignored.
+     *
+     * @param manufacturer Manufacturer
+     * @return {@code true} if it should be ignored
+     */
+    public boolean isIgnored(final Manufacturer manufacturer) {
+
+        final String key = manufacturer.name().concat(SUFFIX_IGNORE);
+
+        return YES.equalsIgnoreCase(properties.get(key));
     }
 
     /**

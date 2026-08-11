@@ -54,6 +54,7 @@ public class ConvertRest {
     @Operation(summary = "Convert from Autodesk Fusion 360 FAO ZIP file with CSV for BOM and PnP to target manufacturer ZIP.")
     @APIResponses(value = {
             @APIResponse(responseCode = SHS_OK, description = "ZIP file.", content = @Content(mediaType = APPLICATION_ZIP, schema = @Schema(implementation = byte[].class))),
+            @APIResponse(responseCode = SHS_INTERNAL_SERVER_ERROR, description = "Internal server error.", content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = Error.class))),
             @APIResponse(responseCode = SHS_UNAUTHORIZED, description = "Bad token.", content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = Error.class))),
             @APIResponse(responseCode = SHS_FORBIDDEN, description = "Forbidden.", content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = Error.class)))
     })
