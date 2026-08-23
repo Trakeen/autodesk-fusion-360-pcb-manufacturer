@@ -74,6 +74,7 @@ public class ConverterService {
                             final PnpType type = PnpType.fromFileName(name);
                             final List<PnpComponent> components = Arrays.stream(input.split(NEWLINE_PATTERN))
                                                                         .map(l -> PnpComponent.fromLine(l, type))
+                                                                        .sorted()
                                                                         .toList();
                             final OutputFile<PnpComponent> file = OutputFile.<PnpComponent>builder()
                                                                             .type(PNP)
@@ -92,6 +93,7 @@ public class ConverterService {
                             final List<BomComponent> components = Arrays.stream(lines)
                                                                         .map(line -> BomComponent.fromLine(headers, line))
                                                                         .filter(Objects::nonNull)
+                                                                        .sorted()
                                                                         .toList();
                             final OutputFile<BomComponent> file = OutputFile.<BomComponent>builder()
                                                                             .type(BOM)

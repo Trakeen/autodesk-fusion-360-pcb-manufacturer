@@ -19,7 +19,7 @@ import static org.otomotive.pcb.Constants.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @RegisterForReflection
-public class PnpComponent {
+public class PnpComponent implements Comparable<PnpComponent> {
 
     private String name;
     private PnpType pnpType;
@@ -126,5 +126,16 @@ public class PnpComponent {
         }
 
         return correction;
+    }
+
+    @Override
+    public int compareTo(final PnpComponent pc) {
+
+        if (pc == null) {
+
+            return 1;
+        }
+
+        return getName().compareTo(pc.getName());
     }
 }

@@ -21,7 +21,7 @@ import static org.otomotive.pcb.Constants.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @RegisterForReflection
-public class BomComponent {
+public class BomComponent implements Comparable<BomComponent> {
 
     private int quantity;
     private String value;
@@ -162,5 +162,16 @@ public class BomComponent {
         }
 
         return EMPTY;
+    }
+
+    @Override
+    public int compareTo(final BomComponent bc) {
+
+        if (bc == null) {
+
+            return 1;
+        }
+
+        return getName().compareTo(bc.getName());
     }
 }
